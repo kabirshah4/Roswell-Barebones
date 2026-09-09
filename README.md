@@ -42,32 +42,135 @@ subscription — one FastAPI process, one SQLite file, one browser tab.
 
 ---
 
-## Quickstart
+## Getting started
+
+### 1. Install
+
+Roswell needs **Python 3.12+** and [uv](https://docs.astral.sh/uv/). If you do
+not have uv:
 
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh   # if you do not have uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Then clone and install. `uv sync` creates the virtualenv and installs
+everything from `uv.lock`:
+
+```bash
+git clone https://github.com/kabirshah4/Roswell-Terminal.git
+cd Roswell-Terminal
 uv sync
+```
+
+> **Every command from here runs inside the project directory.** `uv` looks for
+> `pyproject.toml` in the working directory and its parents, so running from
+> your home folder fails with `No pyproject.toml found`.
+
+### 2. Run
+
+```bash
 uv run uvicorn backend.main:app --host 127.0.0.1 --port 8000
 ```
 
-Open <http://127.0.0.1:8000>. That is the whole setup — **no API keys are
-required**. Every credential is optional, and each panel reports what it is
-missing rather than failing silently.
+Open <http://127.0.0.1:8000>.
 
-Or run it as a native desktop window (picks a free port, falls back to your
-browser if `pywebview` is absent):
+**No API keys are required to start.** The terminal boots, the watchlist polls
+live prices, charts render, the signal engine computes entries and stops, and
+every feature that needs a key says which key it needs instead of failing
+silently.
+
+To run it as a native desktop window instead — it picks a free port and falls
+back to your browser if `pywebview` is not installed:
 
 ```bash
 uv run python desktop.py
 ```
 
+Stop the server with `Ctrl-C`.
+
+### 3. Where the API keys go
+
+Copy the template and edit it. **`.env` belongs in the project root, beside
+`pyproject.toml`:**
+
 ```bash
-uv run pytest              # 1,244 offline tests, ~50s
-uv run pytest -m live      # opt-in: hits the real Yahoo API
+cp .env.example .env
+```
+
+```
+Roswell-Terminal/
+├── .env             ← here
+├── pyproject.toml
+├── backend/
+└── frontend/
+```
+
+The app reads `.env` at startup by itself — there is no need to `source` or
+`export` anything first. **Restart the server after editing it.** A variable
+already exported in your shell always wins over the file, so a temporary
+override is never clobbered.
+
+Every key is optional. This is the whole list:
+
+| Variable | Unlocks | Without it | Get one |
+|---|---|---|---|
+| `GEMINI_API_KEY` | AI news summaries + analyst chat | Both features report themselves off | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) — free tier |
+| `ANTHROPIC_API_KEY` | Same two features, as an alternative | Falls back to Gemini, or off | [console.anthropic.com](https://console.anthropic.com/settings/keys) — bills per call |
+| `FRED_API_KEY` | Macro calendar (`ECO`) and world yields (`WB`) | Calendar is empty | [fred.stlouisfed.org](https://fred.stlouisfed.org/docs/api/api_key.html) — free |
+| `DISCORD_WEBHOOK_URL` | Pushes triggered setups and price alerts to a channel | Alerts still fire in the UI, just not pushed | Discord → Channel Settings → Integrations → Webhooks |
+| `SCREENER_SCAN_URL` | Symbol search, the Scanner panel, the `IMAP` sector map | Those three say "no screener source configured" | See [Bring your own screener](#bring-your-own-screener) |
+| `ROSWELL_ALLOWED_HOSTS` | Reaching the terminal from another device | Only needed for non-localhost hostnames | See the *Locking the terminal* reference below |
+
+If you set both `GEMINI_API_KEY` and `ANTHROPIC_API_KEY`, Gemini is preferred —
+news enrichment fires on every new article and chat spends a request per
+lookup, and Gemini has a free tier where Anthropic bills per call. Force one
+with `chat_provider` in `backend/config.py`.
+
+To confirm what the app actually picked up, check `/api/health` — it reports
+`ai_enabled`, `fred_enabled`, `alerts_enabled` and `chat_enabled`:
+
+```bash
+curl -s http://127.0.0.1:8000/api/health
+```
+
+### 4. First steps in the terminal
+
+- **Add tickers.** Click the add box on the Watchlist panel and type a symbol.
+  Symbols are validated against Yahoo before being stored, so a typo is
+  rejected rather than saved as a dead row. Full-text search over a symbol
+  catalogue needs `SCREENER_SCAN_URL`; typing an exact ticker always works.
+- **Navigate by function code.** Type into the command line at the top:
+  `AAPL DES` for a company description, `AAPL FA` for financials, a bare
+  `MSFT` to open its description, or `MAIN` for the directory of every code.
+- **Switch tabs** with `1`–`5`, and press `?` for the full shortcut list.
+- **Your data lives in `terminal.db`** in the project root — watchlist, cached
+  bars, news and settings. It is gitignored. Delete it to start clean.
+
+### 5. Tests
+
+```bash
+uv run pytest
+```
+
+1,244 offline tests, about 50 seconds, no network required. To exercise the
+real Yahoo API as well:
+
+```bash
+uv run pytest -m live
 ```
 
 Run the live suite when quotes stop updating — it distinguishes an upstream
 `yfinance` break from a bug in this app.
+
+### Troubleshooting
+
+| Symptom | Cause |
+|---|---|
+| `error: No pyproject.toml found` | You are not in the project directory. `cd Roswell-Terminal` first. |
+| `Failed to spawn: uvicorn` | Dependencies are not installed yet — run `uv sync`, and start the server with `uv run` so it uses the project venv. |
+| `sh: #: No such file or directory` | Your shell does not treat `#` as a comment when pasted. Paste commands without trailing comments. |
+| `Address already in use` | Something already holds port 8000. Use `--port 8001`, or stop the other process. |
+| A panel says a key is missing | That is by design. Add the key from the table above and restart. |
 
 ---
 
