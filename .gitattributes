@@ -1,2 +1,16 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# Check every text file out with LF on all three platforms.
+#
+# `text=auto` alone normalises to LF *in the repository* but converts to CRLF
+# on a Windows checkout. That broke the frontend tests, which lift functions
+# out of app.js by searching for "\n}\n" -- a CRLF checkout makes that
+# substring absent, and 27 tests errored at fixture setup on windows-latest.
+# The app is served to browsers and parsed by node; LF is the correct form
+# everywhere, so pin it rather than leaving it to the platform.
+* text=auto eol=lf
+
+# Binaries must never be line-ending converted.
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.pdf binary
