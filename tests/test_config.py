@@ -30,3 +30,23 @@ def test_config_can_be_overridden_for_tests(tmp_path: Path):
     assert custom.db_path == tmp_path / "t.db"
     assert custom.quote_interval_seconds == 1.0
     assert custom.port == 8000
+
+
+def test_the_packaged_data_dir_is_named_roswell_on_every_platform(monkeypatch):
+    """One app, one name.
+
+    Windows previously wrote to %APPDATA%\\Obelisk -- a leftover from an
+    earlier name -- so a packaged Windows build put its database somewhere
+    no other platform, and no part of the documentation, referred to.
+    """
+    from backend import config as config_module
+
+    monkeypatch.setattr(config_module, "IS_FROZEN", True)
+
+    for platform, expected in (
+        ("darwin", "Roswell"),
+        ("win32", "Roswell"),
+        ("linux", "roswell"),
+    ):
+        monkeypatch.setattr(config_module.sys, "platform", platform)
+        assert config_module.user_data_dir().name == expected

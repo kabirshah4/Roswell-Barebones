@@ -8,9 +8,11 @@
 
 **A Bloomberg-style market research terminal that runs entirely on your own machine.**
 
+[![CI](https://github.com/kabirshah4/Roswell-Terminal/actions/workflows/ci.yml/badge.svg)](https://github.com/kabirshah4/Roswell-Terminal/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.12+-blue)
-![Tests](https://img.shields.io/badge/tests-1244%20passing-brightgreen)
+![Platforms](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-informational)
 ![License](https://img.shields.io/badge/license-MIT-black)
+![No build step](https://img.shields.io/badge/frontend-no%20build%20step-lightgrey)
 
 Nine panels on a draggable grid, a command line you navigate by typing function
 codes, a signal engine that computes entries and stops from cached bars, and an
@@ -46,11 +48,20 @@ subscription — one FastAPI process, one SQLite file, one browser tab.
 
 ### 1. Install
 
-Roswell needs **Python 3.12+** and [uv](https://docs.astral.sh/uv/). If you do
-not have uv:
+Roswell runs on **macOS, Linux and Windows**. It needs **Python 3.12+** and
+[uv](https://docs.astral.sh/uv/) — uv installs the right Python for you, so
+that is the only prerequisite.
+
+macOS and Linux:
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Windows (PowerShell):
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
 Then clone and install. `uv sync` creates the virtualenv and installs
@@ -65,6 +76,10 @@ uv sync
 > **Every command from here runs inside the project directory.** `uv` looks for
 > `pyproject.toml` in the working directory and its parents, so running from
 > your home folder fails with `No pyproject.toml found`.
+
+Every command below is identical on all three platforms — `uv run` handles the
+virtualenv, so there is nothing to activate and no `python` vs `python3`
+difference to worry about.
 
 ### 2. Run
 
@@ -1034,26 +1049,43 @@ reports itself off and the rest of the app works unchanged.
 </details>
 
 <details>
-<summary><b>Packaging a desktop app (macOS)</b></summary>
+<summary><b>Packaging a desktop app</b></summary>
+
+The same PyInstaller spec builds on all three platforms — `BUNDLE` is only
+honoured on macOS and ignored elsewhere, so the one file produces an `.app`, a
+`.exe` folder, or a Linux binary as appropriate.
 
 ```bash
 uv pip install pywebview pyinstaller
 uv run pyinstaller roswell.spec --noconfirm
-open "dist/Roswell.app"
 ```
 
-Produces a ~101 MB self-contained `.app`. Put a `.env` next to the `.app` (or in
-`~/Library/Application Support/Roswell/`) to give it credentials.
+| Platform | Output | Launch |
+|---|---|---|
+| macOS | `dist/Roswell.app` (~101 MB) | `open "dist/Roswell.app"` |
+| Windows | `dist/Roswell/Roswell.exe` | double-click, or run it from a shell |
+| Linux | `dist/Roswell/Roswell` | `./dist/Roswell/Roswell` |
 
-User data — the database and cached bars — lives in
-`~/Library/Application Support/Roswell/`, deliberately **not** inside the
-bundle: a signed `.app` is read-only, and reinstalling would otherwise destroy
-the watchlist and cache.
+**User data lives outside the bundle** — deliberately, because a packaged app
+may be read-only once signed, and reinstalling would otherwise destroy the
+watchlist and cache:
 
-The build is unsigned, so the first launch needs right-click → Open (or
-`xattr -dr com.apple.quarantine "dist/Roswell.app"`). Signing it requires
-an Apple Developer account, which this project does not assume.
+| Platform | Database and `.env` |
+|---|---|
+| macOS | `~/Library/Application Support/Roswell/` |
+| Windows | `%APPDATA%\Roswell\` |
+| Linux | `~/.local/share/roswell/` |
 
+A packaged build also looks for `.env` beside the executable itself, which is
+where someone who downloaded it would naturally drop the file.
+
+Running from a checkout — the normal case — puts both in the project root
+instead, so the development workflow is unchanged.
+
+**macOS only:** the build is unsigned, so the first launch needs
+right-click → Open, or `xattr -dr com.apple.quarantine "dist/Roswell.app"`.
+Signing requires an Apple Developer account, which this project does not
+assume.
 
 </details>
 

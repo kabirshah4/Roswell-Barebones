@@ -26,7 +26,7 @@ def user_data_dir() -> Path:
     if sys.platform == "darwin":
         base = Path.home() / "Library" / "Application Support" / "Roswell"
     elif sys.platform == "win32":
-        base = Path(os.environ.get("APPDATA", Path.home())) / "Obelisk"
+        base = Path(os.environ.get("APPDATA", Path.home())) / "Roswell"
     else:
         base = Path.home() / ".local" / "share" / "roswell"
     try:

@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest a panel, function code, or behaviour
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do
+      description: >
+        Describe the task, not the solution. What are you looking at the
+        terminal to find out?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would it look like
+      description: >
+        A panel? A function code? Remember that read routes never fetch, so
+        anything needing fresh data has to go through the poller.
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Constraints
+      options:
+        - label: This does not require a paid or licensed data feed
+        - label: This does not require a brokerage connection
