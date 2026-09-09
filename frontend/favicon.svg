@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>ROSWELL</title>
+  <!-- Flat white on black: no gradients, no greys, no opacity.
+
+       The dome is a shallow cap, not a hemisphere. Earlier versions used a
+       near-full circle and the thing read as a ball sitting on a plate; a real
+       saucer's dome is a low bump on a hull that dominates the silhouette. -->
+  <defs>
+    <clipPath id="domeCut"><rect x="16" y="16" width="32" height="14.2"/></clipPath>
+  </defs>
+
+  <rect width="64" height="64" fill="#0a0a0a"/>
+
+  <g transform="rotate(-11 32 34)">
+    <g fill="#ffffff">
+      <!-- antenna -->
+      <rect x="31.25" y="17" width="1.5" height="7.4" rx="0.75"/>
+      <circle cx="32" cy="15.6" r="2.3"/>
+
+      <!-- shallow dome cap -->
+      <circle cx="32" cy="41" r="17.4" clip-path="url(#domeCut)"/>
+
+      <!-- hull: a lens, tips coming to a point, underside deeper than the top -->
+      <path d="M3.5 34.6 Q32 25.2 60.5 34.6 Q32 45.6 3.5 34.6 Z"/>
+    </g>
+
+    <!-- one cut where the dome sits down onto the hull -->
+    <path d="M18.6 30 a17.4 17.4 0 0 0 26.8 0" fill="none" stroke="#0a0a0a"
+          stroke-width="1.2" stroke-linecap="round"/>
+
+    <!-- rim ports on the underside -->
+    <g fill="#0a0a0a">
+      <circle cx="23"   cy="38.2" r="1.55"/>
+      <circle cx="32"   cy="39.4" r="1.7"/>
+      <circle cx="41"   cy="38.2" r="1.55"/>
+    </g>
+  </g>
+</svg>

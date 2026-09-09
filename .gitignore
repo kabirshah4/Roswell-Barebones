@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+*.db
+*.db-wal
+*.db-shm
+.DS_Store
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Packaging artifacts. dist/ can contain a .env copied next to the .app.
+build/
+dist/
+*.spec.bak
+tools/cloudflared
+tools/*.tgz

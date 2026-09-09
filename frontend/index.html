@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ROSWELL</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="alternate icon" href="/static/favicon.ico" sizes="32x32">
+  <link rel="apple-touch-icon" href="/static/favicon.svg">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div id="lock-screen" class="lock-screen" hidden>
+    <form class="lock-card" id="lock-form" autocomplete="off">
+      <span class="brand lock-brand" role="img" aria-label="Roswell"><span aria-hidden="true"
+>╦═╗╔═╗╔═╗╦ ╦╔═╗╦  ╦  
+╠╦╝║ ║╚═╗║║║║╣ ║  ║  
+╩╚═╚═╝╚═╝╚╩╝╚═╝╩═╝╩═╝</span></span>
+      <p class="lock-sub" id="lock-sub">Locked</p>
+      <input id="lock-password" class="lock-input" type="password"
+             autocomplete="current-password" placeholder="PASSWORD"
+             aria-label="Password">
+      <input id="lock-confirm" class="lock-input" type="password" hidden
+             autocomplete="new-password" placeholder="CONFIRM PASSWORD"
+             aria-label="Confirm password">
+      <input id="lock-totp" class="lock-input" type="text" hidden
+             inputmode="numeric" autocomplete="one-time-code" maxlength="32"
+             placeholder="6-DIGIT CODE" aria-label="Authenticator code">
+      <button type="submit" class="lock-go" id="lock-go">UNLOCK</button>
+      <button type="button" class="lock-bio" id="lock-bio" hidden>
+        ☉ USE TOUCH ID
+      </button>
+      <p class="lock-error error" id="lock-error" hidden></p>
+      <p class="lock-hint" id="lock-hint"></p>
+    </form>
+  </div>
+
+  <header class="topbar">
+    <span class="brand" role="img" aria-label="Roswell"><span aria-hidden="true"
+>╦═╗╔═╗╔═╗╦ ╦╔═╗╦  ╦  
+╠╦╝║ ║╚═╗║║║║╣ ║  ║  
+╩╚═╚═╝╚═╝╚╩╝╚═╝╩═╝╩═╝</span></span>
+    <form id="cmd-form" class="cmd-form" autocomplete="off">
+      <input id="cmd-input" class="cmd-input" type="text"
+             placeholder="AAPL DES · type a code, or MAIN for the directory"
+             aria-label="Command line" aria-autocomplete="list"
+             aria-controls="cmd-suggest">
+      <span class="cmd-go">&lt;GO&gt;</span>
+    </form>
+    <ul id="cmd-suggest" class="cmd-suggest" role="listbox" hidden></ul>
+    <span id="status" class="status">connecting…</span>
+    <span class="topbar-actions">
+      <button type="button" id="reset-layout" class="reset-layout"
+              title="Reset every panel to its default size">RESET LAYOUT</button>
+      <button type="button" id="fullscreen-toggle" class="topbar-btn"
+              title="Fullscreen (F)">⤢ FULL</button>
+      <button type="button" id="help-toggle" class="topbar-btn"
+              title="Keyboard shortcuts (?)">?</button>
+      <button type="button" id="lock-now" class="topbar-btn"
+              title="Lock the terminal">LOCK</button>
+      <button type="button" id="settings-toggle" class="topbar-btn"
+              aria-expanded="false" aria-controls="settings-drawer">SETTINGS</button>
+    </span>
+  </header>
+
+  <div id="newtab-modal" class="modal-overlay" hidden role="dialog"
+       aria-modal="true" aria-labelledby="newtab-title">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 class="modal-title" id="newtab-title">NEW TAB</h2>
+        <button type="button" class="modal-close" id="newtab-close"
+                aria-label="Close">×</button>
+      </div>
+
+      <div class="modal-body">
+      <label class="settings-label" for="newtab-name">NAME</label>
+      <input id="newtab-name" class="modal-search" type="text" maxlength="24"
+             placeholder="e.g. OPTIONS DESK">
+
+      <label class="settings-label">TEMPLATE</label>
+      <div class="template-grid" id="template-grid" role="radiogroup"
+           aria-label="Layout template"></div>
+
+      <label class="settings-label">PANELS
+        <span class="settings-hint" style="padding:0" id="newtab-count"></span>
+      </label>
+      <div class="panel-picker" id="panel-picker"></div>
+
+      <p class="settings-hint" id="newtab-hint"></p>
+      <p id="newtab-error" class="error" hidden></p>
+      </div>
+
+      <div class="modal-foot-actions">
+        <button type="button" id="newtab-create">CREATE TAB</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="symbol-modal" class="modal-overlay" hidden role="dialog"
+       aria-modal="true" aria-labelledby="symbol-modal-title">
+    <div class="modal-card" id="symbol-modal-card">
+      <div class="modal-head">
+        <h2 class="modal-title" id="symbol-modal-title">ADD SYMBOL</h2>
+        <button type="button" class="modal-close" id="symbol-modal-close"
+                aria-label="Close">×</button>
+      </div>
+      <input id="modal-search" class="modal-search" type="text" autocomplete="off"
+             placeholder="Symbol or company name" aria-label="Search symbols">
+      <nav class="chips" id="symbol-chips" role="tablist" aria-label="Asset class">
+        <button type="button" class="chip" role="tab" data-kind=""      aria-selected="true">ALL</button>
+        <button type="button" class="chip" role="tab" data-kind="stock" aria-selected="false">STOCKS</button>
+        <button type="button" class="chip" role="tab" data-kind="fund"  aria-selected="false">FUNDS &amp; ETFS</button>
+        <button type="button" class="chip" role="tab" data-kind="crypto" aria-selected="false">CRYPTO</button>
+        <button type="button" class="chip" role="tab" data-kind="forex" aria-selected="false">FOREX</button>
+        <button type="button" class="chip" role="tab" data-kind="index" aria-selected="false">INDICES</button>
+        <button type="button" class="chip" role="tab" data-kind="dr"    aria-selected="false">ADRS</button>
+      </nav>
+      <ul id="modal-results" class="modal-results" role="listbox"></ul>
+      <p class="modal-foot" id="modal-foot"></p>
+    </div>
+  </div>
+
+  <div id="help-overlay" class="help-overlay" hidden role="dialog"
+       aria-label="Keyboard shortcuts">
+    <div class="help-card">
+      <h2 class="panel-title" tabindex="0">KEYBOARD</h2>
+      <dl class="help-list">
+        <dt>1 2 3</dt><dd>Switch workspace</dd>
+        <dt>/</dt><dd>Search symbols</dd>
+        <dt>a</dt><dd>New price alert</dd>
+        <dt>c</dt><dd>Ask the analyst</dd>
+        <dt>f</dt><dd>Fullscreen</dd>
+        <dt>x</dt><dd>Maximise the panel under the cursor</dd>
+        <dt>Esc</dt><dd>Close / un-maximise</dd>
+        <dt>?</dt><dd>This list</dd>
+      </dl>
+      <p class="settings-hint">
+        Drag any panel edge to resize. Double-click a divider to reset it.
+      </p>
+    </div>
+  </div>
+
+  <!-- Shown once the terminal is unlocked, while every panel and screen is
+       warmed. Same card as the lock screen, so unlocking reads as one
+       continuous sequence rather than two unrelated screens. -->
+  <div id="boot-screen" class="boot-screen" hidden>
+    <div class="boot-card">
+      <span class="brand lock-brand" role="img" aria-label="Roswell"><span aria-hidden="true"
+>╦═╗╔═╗╔═╗╦ ╦╔═╗╦  ╦  
+╠╦╝║ ║╚═╗║║║║╣ ║  ║  
+╩╚═╚═╝╚═╝╚╩╝╚═╝╩═╝╩═╝</span></span>
+      <p class="boot-sub">Booting</p>
+      <div class="boot-bar" role="progressbar" aria-labelledby="boot-status"
+           aria-valuemin="0" aria-valuemax="100" id="boot-bar">
+        <span class="boot-fill" id="boot-fill"></span>
+      </div>
+      <p class="boot-status" id="boot-status">initialising</p>
+      <p class="boot-count" id="boot-count"></p>
+      <p class="boot-skip">ESC to skip</p>
+    </div>
+  </div>
+
+  <div id="settings-drawer" class="settings-drawer" hidden>
+    <h2 class="panel-title" tabindex="0">SETTINGS</h2>
+    <label class="settings-label" for="webhook-input">DISCORD WEBHOOK</label>
+    <p class="settings-hint" id="webhook-state">checking…</p>
+    <form id="webhook-form" class="add-form" autocomplete="off">
+      <input id="webhook-input" type="password" autocomplete="off"
+             placeholder="https://discord.com/api/webhooks/…">
+      <button type="submit">SAVE</button>
+      <button type="button" id="webhook-clear">CLEAR</button>
+    </form>
+    <p id="webhook-error" class="error" hidden></p>
+    <p class="settings-hint">
+      Computed setups and triggered price alerts are pushed here. The URL is a
+      credential — anyone holding it can post to your channel — so it is stored
+      locally and never shown again in full.
+    </p>
+    <label class="settings-label">SECURITY</label>
+    <p class="settings-hint" id="security-state">checking…</p>
+    <form id="password-form" class="add-form" autocomplete="off"
+          style="flex-direction:column;gap:5px;align-items:stretch">
+      <input id="pw-current" type="password" autocomplete="current-password"
+             placeholder="CURRENT PASSWORD">
+      <input id="pw-new" type="password" autocomplete="new-password"
+             placeholder="NEW PASSWORD">
+      <button type="submit">CHANGE PASSWORD</button>
+    </form>
+    <p id="pw-error" class="error" hidden></p>
+    <div class="add-form">
+      <button type="button" id="bio-register">SET UP TOUCH ID</button>
+      <button type="button" id="bio-forget">FORGET</button>
+    </div>
+    <p class="settings-hint" id="bio-state"></p>
+
+    <label class="settings-label">ACCOUNT &amp; RISK</label>
+    <p class="settings-hint" id="account-state">checking…</p>
+    <form id="account-form" class="add-form" autocomplete="off">
+      <input id="account-size" type="number" step="any" placeholder="ACCOUNT SIZE">
+      <input id="account-risk" type="number" step="0.1" placeholder="RISK % PER TRADE">
+      <button type="submit">SAVE</button>
+    </form>
+    <p class="settings-hint">
+      Turns the playbook's entry and stop into a share count. Nothing here
+      places an order or knows your broker — it is arithmetic on two numbers
+      you already have.
+    </p>
+    <p id="account-error" class="error" hidden></p>
+
+    <label class="settings-label">TWO-FACTOR</label>
+    <p class="settings-hint" id="totp-state">checking…</p>
+    <div id="totp-setup" hidden>
+      <p class="settings-hint">Add this key to your authenticator app, then
+        type a code from it to switch the factor on.</p>
+      <p class="totp-secret" id="totp-secret"></p>
+      <form id="totp-form" class="add-form" autocomplete="off">
+        <input id="totp-code" type="text" inputmode="numeric" maxlength="8"
+               placeholder="6-DIGIT CODE" autocomplete="one-time-code">
+        <button type="submit">TURN ON</button>
+      </form>
+    </div>
+    <div class="add-form">
+      <button type="button" id="totp-begin">SET UP TWO-FACTOR</button>
+      <button type="button" id="totp-off" hidden>TURN OFF</button>
+    </div>
+    <div id="totp-codes" hidden>
+      <p class="settings-hint">Save these. Each works once, and this is the
+        only time they are shown — only their hashes are kept. There is no
+        password reset in this app, so without them a lost phone is a lost
+        terminal.</p>
+      <pre class="totp-backup" id="totp-backup"></pre>
+    </div>
+    <p id="totp-error" class="error" hidden></p>
+
+    <label class="settings-label">SYMBOL CATALOGUE</label>
+    <p class="settings-hint" id="symbol-state">checking…</p>
+    <button type="button" id="symbol-refresh">REFRESH CATALOGUE</button>
+  </div>
+
+  <nav class="tabstrip" id="tabstrip" role="tablist" aria-label="Open screens">
+    <div class="tabstrip-tabs" id="tabstrip-tabs"></div>
+    <button type="button" class="tab-new" id="tab-new" title="New screen (MAIN)"
+            aria-label="New screen">+</button>
+  </nav>
+
+  <section class="screen" id="screen" hidden aria-live="polite"></section>
+
+  <main class="grid booting">
+    <!-- Panels are positioned by JS, so until app.js has run and applied a
+         workspace the canvas is completely blank — on a slow connection, for
+         seconds. This is static markup so it paints with the HTML, before any
+         script has been fetched, and app.js removes it once the real layout
+         is in place. -->
+    <div class="boot" id="boot" aria-hidden="true">
+      <div class="boot-panel" style="left:0;top:0;width:25%;height:66%"></div>
+      <div class="boot-panel" style="left:0;top:66%;width:25%;height:34%"></div>
+      <div class="boot-panel" style="left:25%;top:0;width:50%;height:58%"></div>
+      <div class="boot-panel" style="left:25%;top:58%;width:50%;height:42%"></div>
+      <div class="boot-panel" style="left:75%;top:0;width:25%;height:100%"></div>
+    </div>
+    <div class="snap-guide" aria-hidden="true"></div>
+    <section class="panel" id="watchlist-panel">
+      <h2 class="panel-title" tabindex="0"><button type="button" class="maximise" data-maximise title="Maximise (x)">⤢</button>WATCHLIST</h2>
+      <form id="add-form" class="add-form" autocomplete="off">
+        <!-- readonly: this is a trigger for the browser, not a field. Typing
+             here would race the modal that opens on focus. -->
+        <input id="add-input" type="text" readonly
+               placeholder="SEARCH 25,000 SYMBOLS"
+               aria-haspopup="dialog" aria-controls="symbol-modal">
+        <button type="button" id="add-open">+</button>
+      </form>
+
+      <p id="add-error" class="error" hidden></p>
+      <table class="watchlist">
+        <thead>
+          <tr><th data-sort="ticker">SYM</th><th class="num" data-sort="price">LAST</th><th class="num" data-sort="change_pct">CHG%</th><th>TREND</th></tr>
+        </thead>
+        <tbody id="watchlist-body">
+          <tr class="empty"><td colspan="4">No tickers. Add one above.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel" id="chart-panel">
+      <h2 class="panel-title" tabindex="0"><button type="button" class="maximise" data-maximise title="Maximise (x)">⤢</button>
+        CHART — <span id="active-ticker">—</span>
+        <a id="tv-link" class="tv-link" href="https://www.tradingview.com/chart/"
+           target="_blank" rel="noopener">OPEN IN TRADINGVIEW ↗</a>
+      </h2>
+      <div id="chart-container" class="chart-container">
+        <p class="empty-chart">Select a ticker to load its chart.</p>
+      </div>
+    </section>
+
+    <section class="panel" id="fundamentals-panel">
+      <h2 class="panel-title" tabindex="0"><button type="button" class="maximise" data-maximise title="Maximise (x)">⤢</button>FUNDAMENTALS — <span class="active-sym">—</span></h2>
+      <table class="fundamentals">
+        <tbody id="fundamentals-body">
+          <tr class="empty"><td colspan="2">Select a ticker.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel" id="news-panel">
+      <h2 class="panel-title" tabindex="0"><button type="button" class="maximise" data-maximise title="Maximise (x)">⤢</button>
+        NEWS — <span class="active-sym">—</span>
+        <span id="ai-status" class="ai-status"></span>
+      </h2>
+      <ul id="news-list" class="news-list">
+        <li class="empty">Select a ticker.</li>
+      </ul>
+    </section>
+
+    <section class="panel" id="screener-panel">
+      <h2 class="panel-title" tabindex="0"><button type="button" class="maximise" data-maximise title="Maximise (x)">⤢</button>
+        SCREENER
+        <span id="screener-coverage" class="ai-status"></span>
+      </h2>
+      <form id="screener-form" class="screener-form" autocomplete="off">
+        <input id="f-pe-max" type="number" step="any" placeholder="P/E &lt;">
+        <input id="f-mcap-min" type="number" step="any" placeholder="MCAP &gt; (B)">
+        <input id="f-div-min" type="number" step="any" placeholder="DIV &gt; %">
+        <input id="f-sector" type="text" placeholder="SECTOR">
+        <button type="submit">RUN</button>
+      </form>
+      <div class="preset-bar">
+        <select id="preset-select" aria-label="Saved screens">
+          <option value="">SAVED SCREENS…</option>
+        </select>
+        <button type="button" id="preset-save" title="Save the current filters">SAVE</button>
+        <button type="button" id="preset-delete" title="Delete the selected screen">DEL</button>
+      </div>
+      <p id="screener-error" class="error" hidden></p>
+      <table class="screener">
+        <thead>
+          <tr><th>SYM</th><th class="num">P/E</th><th class="num">MCAP</th><th>SECTOR</th></tr>
+        </thead>
+        <tbody id="screener-body">
+          <tr class="empty"><td colspan="4">Set filters and run.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel" id="alerts-panel">
+      <h2 class="panel-title" tabindex="0"><button type="button" class="maximise" data-maximise title="Maximise (x)">⤢</button>
+        ALERTS
+        <span id="alerts-status" class="ai-status"></span>
+      </h2>
+      <form id="alert-form" class="alert-form" autocomplete="off">
+        <input id="alert-ticker" type="text" placeholder="TICKER" maxlength="12">
+        <select id="alert-direction" aria-label="Alert direction">
+          <option value="above">CROSSES ABOVE</option>
+          <option value="below">CROSSES BELOW</option>
+        </select>
+        <input id="alert-price" type="number" step="any" placeholder="PRICE">
+        <input id="alert-note" type="text" placeholder="NOTE (OPTIONAL)" maxlength="200">
+        <button type="submit">ADD ALERT</button>
+      </form>
+      <p id="alert-error" class="error" hidden></p>
+      <ul id="my-alerts" class="news-list"></ul>
+      <h3 class="sub-title">FIRED SETUPS</h3>
+      <ul id="alerts-list" class="news-list">
+        <li class="empty">No setups yet.</li>
+      </ul>
+    </section>
+
+    <section class="panel" id="positions-panel">
+      <h2 class="panel-title" tabindex="0"><button type="button" class="maximise" data-maximise title="Maximise (x)">⤢</button>
+        POSITIONS
+        <span class="ai-status" id="positions-stamp"></span>
+      </h2>
+      <form id="position-form" class="alert-form" autocomplete="off">
+        <input id="pos-ticker" type="text" placeholder="TICKER" maxlength="12">
+        <select id="pos-direction" aria-label="Direction">
+          <option value="long">LONG</option>
+          <option value="short">SHORT</option>
+        </select>
+        <input id="pos-shares" type="number" step="any" placeholder="SHARES">
+        <input id="pos-entry" type="number" step="any" placeholder="ENTRY">
+        <input id="pos-stop" type="number" step="any" placeholder="STOP">
+        <input id="pos-target" type="number" step="any" placeholder="TARGET">
+        <button type="submit">OPEN</button>
+      </form>
+      <p id="position-error" class="error" hidden></p>
+      <div id="positions-aggregate" class="pos-aggregate"></div>
+      <ul id="positions-list" class="news-list"></ul>
+      <h3 class="sub-title">RECORD</h3>
+      <div id="journal-summary" class="pos-aggregate"></div>
+      <ul id="positions-closed" class="news-list"></ul>
+    </section>
+
+    <section class="panel" id="playbook-panel">
+      <h2 class="panel-title" tabindex="0"><button type="button" class="maximise" data-maximise title="Maximise (x)">⤢</button>
+        PLAYBOOK
+        <span class="ai-status" id="plans-stamp">computing…</span>
+      </h2>
+      <div class="horizon-bar" id="horizon-bar" role="tablist"
+           aria-label="Trading horizon"></div>
+      <ul id="plans-list" class="news-list">
+        <li class="empty">Loading…</li>
+      </ul>
+    </section>
+
+    <section class="panel" id="scanner-panel">
+      <h2 class="panel-title" tabindex="0"><button type="button" class="maximise" data-maximise title="Maximise (x)">⤢</button>
+        SCANNER
+        <span id="scanner-status" class="ai-status"></span>
+      </h2>
+      <div class="scan-bar">
+        <label>PRICE &gt;<input id="scan-price" type="number" step="any" value="15"></label>
+        <label>10D VOL &gt;<input id="scan-volume" type="number" step="any" value="10"><span>M</span></label>
+        <button type="button" id="scan-run">SCAN NOW</button>
+      </div>
+      <ul id="scanner-list" class="news-list">
+        <li class="empty">Run a scan, or wait for the 15-minute refresh.</li>
+      </ul>
+    </section>
+
+    <section class="panel" id="macro-panel">
+      <h2 class="panel-title" tabindex="0"><button type="button" class="maximise" data-maximise title="Maximise (x)">⤢</button>MACRO CALENDAR</h2>
+      <ul id="macro-list" class="news-list">
+        <li class="empty">Loading…</li>
+      </ul>
+    </section>
+
+    <section class="panel" id="chat-panel">
+      <h2 class="panel-title" tabindex="0"><button type="button" class="maximise" data-maximise title="Maximise (x)">⤢</button>
+        ANALYST
+        <span id="chat-status" class="ai-status"></span>
+      </h2>
+      <div id="chat-log" class="chat-log"></div>
+      <form id="chat-form" class="add-form" autocomplete="off">
+        <input id="chat-input" type="text" placeholder="Ask about a ticker, setup, or screen">
+        <button type="submit">SEND</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
