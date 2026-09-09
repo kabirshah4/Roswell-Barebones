@@ -176,10 +176,10 @@ def test_the_panel_shows_the_win_rate_and_average_r(db_path):
 def test_the_readme_states_the_grades_do_not_reliably_rank(db_path):
     """The measured result contradicts the obvious reading of A+/A/B, and the
     entry point to the project should not let a user assume otherwise."""
-    readme = __import__("pathlib").Path("README.md").read_text()
+    readme = __import__("pathlib").Path("README.md").read_text(encoding="utf-8")
     assert "do not reliably rank" in readme
 
 
 def test_the_readme_is_not_still_describing_phase_1(db_path):
-    readme = __import__("pathlib").Path("README.md").read_text()
+    readme = __import__("pathlib").Path("README.md").read_text(encoding="utf-8")
     assert "Phase 1: watchlist" not in readme

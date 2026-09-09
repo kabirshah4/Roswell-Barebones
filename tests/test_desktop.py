@@ -52,7 +52,7 @@ def test_two_reservations_do_not_collide():
 
 def test_no_hardcoded_port():
     """Port 8000 is frequently already in use; the app must not assume it."""
-    source = __import__("pathlib").Path("desktop.py").read_text()
+    source = __import__("pathlib").Path("desktop.py").read_text(encoding="utf-8")
     assert "8000" not in source
 
 
@@ -95,7 +95,7 @@ def test_a_missing_pywebview_falls_back_rather_than_crashing(monkeypatch):
 
 def test_pywebview_is_not_a_project_dependency():
     """The web app must keep working on a machine that cannot build it."""
-    deps = __import__("pathlib").Path("pyproject.toml").read_text()
+    deps = __import__("pathlib").Path("pyproject.toml").read_text(encoding="utf-8")
     project = deps.split("[dependency-groups]")[0]
     assert "pywebview" not in project
 
@@ -103,7 +103,7 @@ def test_pywebview_is_not_a_project_dependency():
 def test_the_server_thread_is_a_daemon():
     """Closing the window must end the process, not orphan a server holding
     the port and the database."""
-    source = __import__("pathlib").Path("desktop.py").read_text()
+    source = __import__("pathlib").Path("desktop.py").read_text(encoding="utf-8")
     assert "daemon=True" in source
 
 
@@ -142,21 +142,21 @@ def test_the_spec_bundles_the_files_read_from_disk_at_runtime():
     """The frontend and schema are not importable modules, so PyInstaller's
     static analysis cannot find them -- without these the app boots and then
     404s on every page."""
-    spec = __import__("pathlib").Path("roswell.spec").read_text()
+    spec = __import__("pathlib").Path("roswell.spec").read_text(encoding="utf-8")
     for asset in ("frontend", "backend/db/schema.sql", "backend/data"):
         assert asset in spec, f"{asset} is read at runtime and must be bundled"
 
 
 def test_the_spec_collects_the_runtime_resolved_imports():
     """yfinance, uvicorn and google-genai all resolve pieces at runtime."""
-    spec = __import__("pathlib").Path("roswell.spec").read_text()
+    spec = __import__("pathlib").Path("roswell.spec").read_text(encoding="utf-8")
     for module in ("uvicorn", "yfinance", "google.genai"):
         assert module in spec
 
 
 def test_build_artifacts_are_gitignored():
     """dist/ can hold a .env copied next to the .app."""
-    ignored = __import__("pathlib").Path(".gitignore").read_text()
+    ignored = __import__("pathlib").Path(".gitignore").read_text(encoding="utf-8")
     assert "dist/" in ignored and "build/" in ignored
 
 

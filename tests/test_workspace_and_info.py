@@ -317,7 +317,7 @@ def test_the_sortable_headers_are_marked_up(assets):
 def test_the_route_field_list_is_not_a_second_hand_kept_copy(assets):
     """Adding fields to the schema left a duplicated whitelist serving the old
     set, so the route now derives its fields from the storage layer."""
-    source = __import__("pathlib").Path("backend/routes/fundamentals.py").read_text()
+    source = __import__("pathlib").Path("backend/routes/fundamentals.py").read_text(encoding="utf-8")
     assert "database._FUNDAMENTAL_FIELDS" in source
 
 
@@ -565,7 +565,7 @@ def test_the_play_command_opens_the_playbook_panel(assets):
 
 # --- which security a screen is about ----------------------------------------
 
-def test_a_ticker_screen_opened_from_the_directory_uses_the_focused_ticker():
+def test_a_ticker_screen_opened_from_the_directory_uses_the_focused_ticker(tmp_path):
     """The directory lists functions, not securities, so its rows carry no
     ticker. Before this, clicking HDS asked the API about a company called
     "null" — which answers 200 with every field empty, so the screen rendered
@@ -576,21 +576,21 @@ def test_a_ticker_screen_opened_from_the_directory_uses_the_focused_ticker():
     import subprocess
     from pathlib import Path
 
-    source = (Path(__file__).resolve().parents[1] / "frontend" / "app.js").read_text()
+    source = (Path(__file__).resolve().parents[1] / "frontend" / "app.js").read_text(encoding="utf-8")
     start = source.index("function resolveTicker(")
     end = source.index("\n}\n", start) + 3
     script = source[start:end] + """
 const { known, ticker, active } = JSON.parse(require("fs").readFileSync(0, "utf8"));
 process.stdout.write(JSON.stringify(resolveTicker(known, ticker, active)));
 """
-    tmp = Path("/tmp/resolve_ticker.js")
-    tmp.write_text(script)
+    tmp = tmp_path / "resolve_ticker.js"
+    tmp.write_text(script, encoding="utf-8")
 
     def resolve(known, ticker, active):
         out = subprocess.run(
             ["node", str(tmp)],
             input=json.dumps({"known": known, "ticker": ticker, "active": active}),
-            capture_output=True, text=True, check=True,
+            capture_output=True, text=True, encoding="utf-8", check=True,
         )
         return json.loads(out.stdout)
 

@@ -52,7 +52,8 @@ def _load_universe() -> list[str]:
     path = Path(__file__).parent / "data" / "sp500.txt"
     if not path.exists():
         return []
-    return [line.strip() for line in path.read_text().splitlines() if line.strip()]
+    return [line.strip() for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip()]
 
 
 def _asset_version(path: Path) -> str:
@@ -74,7 +75,7 @@ def _render_index(frontend_dir: Path) -> str:
     new file gets served from the browser's heuristic cache and the fix sits in
     a file the page never fetches, which cost an afternoon once already.
     """
-    html = (frontend_dir / "index.html").read_text()
+    html = (frontend_dir / "index.html").read_text(encoding="utf-8")
     for asset in sorted(set(re.findall(r"/static/([A-Za-z0-9_.-]+)", html))):
         path = frontend_dir / asset
         if not path.is_file():

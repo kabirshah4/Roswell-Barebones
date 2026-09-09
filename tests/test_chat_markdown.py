@@ -37,11 +37,11 @@ const input = require("fs").readFileSync(0, "utf8");
 process.stdout.write(renderMarkdown(input));
 """
     script = tmp_path_factory.mktemp("js") / "render.js"
-    script.write_text(harness)
+    script.write_text(harness, encoding="utf-8")
 
     def run(markdown):
         return subprocess.run(
-            ["node", str(script)], input=markdown, capture_output=True, text=True,
+            ["node", str(script)], input=markdown, capture_output=True, text=True, encoding="utf-8",
             check=True,
         ).stdout
 
@@ -176,7 +176,7 @@ def test_the_renderer_escapes_before_it_formats(render):
     being angle brackets before any pattern runs."""
     js_src = subprocess.run(
         ["grep", "-n", "escapeHtml(String(raw", "frontend/app.js"],
-        capture_output=True, text=True).stdout
+        capture_output=True, text=True, encoding="utf-8").stdout
     assert js_src, "renderMarkdown must escape its input first"
 
 

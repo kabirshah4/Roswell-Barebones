@@ -327,9 +327,9 @@ def test_the_hash_tracks_the_file_contents(db_path, tmp_path):
     from backend.main import _asset_version
 
     a = tmp_path / "a.js"
-    a.write_text("one")
+    a.write_text("one", encoding="utf-8")
     first = _asset_version(a)
-    a.write_text("two")
+    a.write_text("two", encoding="utf-8")
     assert _asset_version(a) != first
 
 

@@ -50,3 +50,29 @@ def test_the_packaged_data_dir_is_named_roswell_on_every_platform(monkeypatch):
     ):
         monkeypatch.setattr(config_module.sys, "platform", platform)
         assert config_module.user_data_dir().name == expected
+
+
+def test_every_text_read_declares_utf8():
+    """Windows defaults to the locale codepage, not UTF-8.
+
+    `index.html` carries the box-drawing wordmark, so a bare `read_text()`
+    raised UnicodeDecodeError at byte 655 under cp1252 and `GET /` answered
+    500 -- the app could not serve its own page on Windows. schema.sql, the
+    ticker list and .env are read the same way and would fail the same way.
+    """
+    import re
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    offenders = []
+    for source in list((root / "backend").rglob("*.py")) + [root / "desktop.py"]:
+        for number, line in enumerate(
+            source.read_text(encoding="utf-8").splitlines(), 1
+        ):
+            if re.search(r"\.read_text\(\s*\)", line):
+                offenders.append(f"{source.relative_to(root)}:{number}")
+
+    assert not offenders, (
+        "read_text() without encoding=\"utf-8\" breaks on Windows: "
+        + ", ".join(offenders)
+    )

@@ -246,9 +246,9 @@ process.stdout.write(JSON.stringify(out));
 """,
     ])
     script = tmp_path / "grid.js"
-    script.write_text(src)
+    script.write_text(src, encoding="utf-8")
     grids = json.loads(
-        subprocess.run(["node", str(script)], capture_output=True, text=True,
+        subprocess.run(["node", str(script)], capture_output=True, text=True, encoding="utf-8",
                        check=True).stdout
     )
     assert len(grids) == 25
@@ -274,9 +274,9 @@ def test_an_out_of_range_grid_falls_back(assets, tmp_path):
         "process.stdout.write(JSON.stringify(buildCustomTemplate(5, 99).slots));",
     ])
     script = tmp_path / "fallback.js"
-    script.write_text(src)
+    script.write_text(src, encoding="utf-8")
     slots = json.loads(
-        subprocess.run(["node", str(script)], capture_output=True, text=True,
+        subprocess.run(["node", str(script)], capture_output=True, text=True, encoding="utf-8",
                        check=True).stdout
     )
     assert len(slots) == 4, "an unsupported size should fall back, not break"

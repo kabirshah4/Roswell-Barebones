@@ -273,7 +273,7 @@ def test_every_selectable_chip_is_a_tab():
 
     Caught by a Chrome probe, not by reading the source: the CSS attribute
     selector works either way."""
-    source = APP_JS.read_text()
+    source = APP_JS.read_text(encoding="utf-8")
     for line_no, line in enumerate(source.splitlines(), 1):
         if "aria-selected" not in line or "setAttribute" in line:
             continue

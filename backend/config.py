@@ -77,7 +77,7 @@ def _load_env_file(path: Path | None = None) -> int:
     text = None
     for candidate in candidates:
         try:
-            text = candidate.read_text()
+            text = candidate.read_text(encoding="utf-8")
             break
         except (OSError, UnicodeDecodeError):
             continue

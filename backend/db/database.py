@@ -73,7 +73,7 @@ def _apply_migrations(conn: sqlite3.Connection) -> None:
 def init_db(db_path: Path) -> None:
     db_path.parent.mkdir(parents=True, exist_ok=True)
     with get_conn(db_path) as conn:
-        conn.executescript(SCHEMA_PATH.read_text())
+        conn.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
         _apply_migrations(conn)
 
 

@@ -10,7 +10,7 @@ from backend.config import _load_env_file
 
 def write(tmp_path, body):
     p = tmp_path / ".env"
-    p.write_text(body)
+    p.write_text(body, encoding="utf-8")
     return p
 
 
@@ -107,7 +107,10 @@ def test_the_database_lives_outside_the_app_bundle(monkeypatch):
     try:
         data = cfg.user_data_dir()
         assert data != cfg.PROJECT_ROOT
-        assert "Application Support" in str(data) or ".local" in str(data)
+        # macOS, Linux and Windows respectively.
+        assert ("Application Support" in str(data)
+                or ".local" in str(data)
+                or "AppData" in str(data))
     finally:
         monkeypatch.delattr(sys, "frozen", raising=False)
         importlib.reload(cfg)
@@ -136,8 +139,8 @@ def test_the_first_readable_file_wins(tmp_path, monkeypatch):
 
     first = tmp_path / "a.env"
     second = tmp_path / "b.env"
-    first.write_text("TEST_KEY=first\n")
-    second.write_text("TEST_KEY=second\n")
+    first.write_text("TEST_KEY=first\n", encoding="utf-8")
+    second.write_text("TEST_KEY=second\n", encoding="utf-8")
     monkeypatch.setattr(cfg, "env_search_paths", lambda: [first, second])
     monkeypatch.delenv("TEST_KEY", raising=False)
     cfg._load_env_file()
@@ -150,7 +153,7 @@ def test_a_missing_first_candidate_falls_through(tmp_path, monkeypatch):
     import backend.config as cfg
 
     present = tmp_path / "present.env"
-    present.write_text("TEST_KEY=found\n")
+    present.write_text("TEST_KEY=found\n", encoding="utf-8")
     monkeypatch.setattr(
         cfg, "env_search_paths", lambda: [tmp_path / "nope.env", present])
     monkeypatch.delenv("TEST_KEY", raising=False)

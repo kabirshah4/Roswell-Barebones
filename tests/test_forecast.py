@@ -201,7 +201,7 @@ def test_the_module_performs_no_io():
     import ast
     from pathlib import Path
 
-    tree = ast.parse(Path("backend/services/forecast.py").read_text())
+    tree = ast.parse(Path("backend/services/forecast.py").read_text(encoding="utf-8"))
     imported = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
